@@ -1,0 +1,15 @@
+import os
+from pathlib import Path
+
+from aiogram.fsm.storage.memory import MemoryStorage
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+DATABASES_PROD = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+MEMORRY_FOR_TG_BOT_FSM = MemoryStorage()
