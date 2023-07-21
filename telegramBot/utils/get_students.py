@@ -14,7 +14,8 @@ def get_permissions(date=datetime.now()):
 
     students = Student.objects.filter(permissions__when_goes_out__day=current_day,
                                       permissions__when_goes_out__month=current_month,
-                                      permissions__when_goes_out__year=current_year).distinct().order_by('surname',
+                                      permissions__when_goes_out__year=current_year,
+                                      permissions__finished_filling=True).distinct().order_by('surname',
                                                                                                          'name',
                                                                                                          'fathers_name')
 

@@ -40,7 +40,8 @@ def get_keyboard_students(grade: Grade):
     students = Student.objects.filter(grade=grade). \
         exclude(permissions__when_goes_out__day=now.day,
                 permissions__when_goes_out__month=now.month,
-                permissions__when_goes_out__year=now.year).order_by('surname')
+                permissions__when_goes_out__year=now.year,
+                permissions__finished_filling=True).order_by('surname')
     builder = ReplyKeyboardBuilder()
     for student in students:
         builder.button(
