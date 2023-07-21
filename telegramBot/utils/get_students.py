@@ -7,10 +7,10 @@ def get_students(students):
     return [str(student) for student in students]
 
 
-def get_permissions(date=None):
-    current_day = datetime.now().day
-    current_month = datetime.now().month
-    current_year = datetime.now().year
+def get_permissions(date=datetime.now()):
+    current_day = date.day
+    current_month = date.month
+    current_year = date.year
 
     students = Student.objects.filter(permissions__when_goes_out__day=current_day,
                                       permissions__when_goes_out__month=current_month,
@@ -22,7 +22,7 @@ def get_permissions(date=None):
 
 
 def get_formatted_students(date=None, max_rows=15):
-    students: [Student] = get_permissions(date)
+    students: [Student] = get_permissions(datetime.now())
     if len(students) < max_rows:
         return get_students(students), []
     else:
