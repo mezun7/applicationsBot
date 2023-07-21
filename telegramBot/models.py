@@ -21,9 +21,13 @@ class Student(models.Model):
     name = models.CharField(max_length=100, verbose_name='Имя')
     surname = models.CharField(max_length=100, verbose_name='Фамилия')
     fathers_name = models.CharField(max_length=100, verbose_name='Отчество')
+    lives_in_dormitory = models.BooleanField(default=True, verbose_name='Живет в интернате?')
+    can_go_home_in_the_end_of_the_week = models.BooleanField(default=False, verbose_name='Может уходить домой '
+                                                                                         'самостоятельно в к'
+                                                                                         'онце недели?')
 
     def __str__(self):
-        return f'{self.grade}: {self.surname} {self.name} {self.fathers_name}'
+        return f'{self.surname} {self.name} {self.fathers_name} ({self.grade})'
 
 
 class Permissions(models.Model):
