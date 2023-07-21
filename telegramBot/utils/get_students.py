@@ -14,7 +14,7 @@ def get_permissions(date=None):
     permissions = Permissions.objects.filter(when_goes_out__day=current_day,
                                              when_goes_out__month=current_month,
                                              when_goes_out__year=current_year)
-    students = permissions.students_set.all()
+    students = permissions.student_set.all()
 
     return [student for student in students]
 
