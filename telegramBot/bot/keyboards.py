@@ -57,7 +57,7 @@ def get_main_keyboard(tg_bot_auth: TGBotAuth):
         builder.button(text=f'{grade.year_of_study}-{grade.group}',
                        callback_data=MainCallback(action='grade', pk=f'{grade.pk}').pack())
 
-    builder.adjust(2)
+    builder.adjust(4)
 
     return builder.as_markup(), MESSAGES['grade_choice'], MyStates.grade_choosing
 
