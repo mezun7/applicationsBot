@@ -13,6 +13,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 
 from applicationsBot import settings
+from applicationsBot.settings import TGBOT_MEMORY
 from telegramBot.bot.cb_data import MainCallback
 from telegramBot.bot.keyboards import menu, get_main_keyboard, get_keyboard_students, get_reasons_keyboard
 from telegramBot.bot.states import MyStates
@@ -29,10 +30,11 @@ async def main():
     global dp, bot
     logging.basicConfig(level=logging.INFO)
     bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML)
-    dp = Dispatcher(storage=MemoryStorage())
+    dp = Dispatcher(storage=TGBOT_MEMORY)
     dp.include_router(router)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+    # await dp.storage.close()
 
 
 @router.message(Command("start"))
