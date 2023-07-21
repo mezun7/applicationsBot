@@ -11,10 +11,12 @@ def get_permissions(date=None):
     current_day = datetime.now().day
     current_month = datetime.now().month
     current_year = datetime.now().year
-    permissions = Permissions.objects.filter(when_goes_out__day=current_day,
-                                             when_goes_out__month=current_month,
-                                             when_goes_out__year=current_year)
-    students = permissions.student_set.all()
+
+    students = Student.objects.filter(permissions__when_goes_out__day=current_day,
+                                      permissions_when_goes_out__month=current_month,
+                                      permissions_when_goes_out__year=current_year).order_by('surname',
+                                                                                             'name',
+                                                                                             'fathers_name')
 
     return [student for student in students]
 
