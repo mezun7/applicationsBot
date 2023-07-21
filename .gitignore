@@ -125,7 +125,6 @@ fabric.properties
 
 # Distribution / packaging
 .Python
-applicationsBot/production.py
 env/
 build/
 develop-eggs/
@@ -211,5 +210,6 @@ ENV/
 
 # mkdocs documentation
 /site
+applicationsBot/production.py
 
 # End of https://www.gitignore.io/api/macos,linux,django,python,pycharm
