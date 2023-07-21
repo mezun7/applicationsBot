@@ -21,8 +21,8 @@ def get_permissions(date=datetime.now()):
     return [student for student in students]
 
 
-def get_formatted_students(date=None, max_rows=15):
-    students: [Student] = get_permissions(datetime.now())
+def get_formatted_students(date=datetime.now(), max_rows=15):
+    students: [Student] = get_permissions(date)
     if len(students) < max_rows:
         return get_students(students), []
     else:

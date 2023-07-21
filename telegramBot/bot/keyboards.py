@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import aiogram
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, \
     ReplyKeyboardRemove
@@ -33,7 +35,12 @@ MESSAGES = {
 
 @sync_to_async
 def get_keyboard_students(grade: Grade):
-    students = Student.objects.filter(grade=grade).order_by('surname')
+    now = datetime.now()
+
+    students = Student.objects.filter(grade=grade). \
+        exclude(permissions__when_goes_out__day=now.day,
+                permissions__when_goes_out__month=now.month,
+                permissions__when_goes_out__year=now.year).order_by('surname')
     builder = ReplyKeyboardBuilder()
     for student in students:
         builder.button(
