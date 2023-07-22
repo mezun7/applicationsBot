@@ -14,12 +14,15 @@ from telegramBot.models import Grade, Student, Permissions, TGBotAuth, ReasonsAp
 @admin.register(Grade)
 class AdminGrade(admin.ModelAdmin):
     list_display = ('year_of_study', 'group')
+    list_filter = ('year_of_study',)
 
 
 @admin.register(Student)
 class AdminStudent(admin.ModelAdmin):
     list_display = ('grade', 'surname', 'name', 'fathers_name')
     search_fields = ('grade', 'surname', 'name', 'fathers_name')
+    autocomplete_fields = ['parent']
+    list_filter = ('grade__year_of_study', 'grade__group',)
 
     change_list_template = "telegramBot/students_changelist.html"
 
@@ -75,15 +78,17 @@ class AdminStudent(admin.ModelAdmin):
 
 @admin.register(Permissions)
 class AdminStudentPermissions(admin.ModelAdmin):
-    list_display = ('student', 'who_gave_permission', 'when_goes_out', 'date_time_permission_given')
-    autocomplete_fields = ['student', 'who_gave_permission']
+    list_display = ('student', 'who_gave_permission', 'when_goes_out', 'date_time_permission_given', 'approved')
+    autocomplete_fields = ['student', 'who_gave_permission', 'application_by_parent']
+    list_filter = ('approved', 'type_of_applicant', 'finished_filling', 'when_goes_out')
 
 
 @admin.register(TGBotAuth)
 class AdminTGBotAuth(admin.ModelAdmin):
     list_display = ('user', 'password', 'chat_id', 'tg_user_id', 'time_logged_in')
-
+    autocomplete_fields = ['user']
     change_list_template = "telegramBot/teachers_changelist.html"
+    list_filter = ('type_of_user', 'authenticated')
 
     def get_urls(self):
         urls = super().get_urls()

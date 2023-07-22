@@ -43,6 +43,14 @@ async def start_handler(msg: Message, state: FSMContext):
     await msg.answer("Привет! Авторизуйтесь, используя следующую команду /login username password")
 
 
+@router.message(Command("reload"))
+async def start_handler(msg: Message, state: FSMContext):
+    bot_auth = await TGBotAuth.objects.aget(tg_user_id=msg.from_user.id)
+    keyboard_markup, text, state_next = await get_main_keyboard(bot_auth)
+    await state.set_state(state_next)
+    await msg.answer(text, reply_markup=keyboard_markup)
+
+
 @router.message(Command("login"))
 async def login_handler(msg: Message, state: FSMContext):
     user_id = msg.from_user.id

@@ -71,6 +71,7 @@ class TGBotAuth(models.Model):
     password = models.CharField(max_length=100, default=gen_string)
     authenticated = models.BooleanField(default=False)
     type_of_user = models.CharField(max_length=30, choices=TYPE_OF_APPLICANT_CHOICES, default='T')
+    going_with_whom_comment = models.CharField(max_length=500, null=True, blank=True, verbose_name='С кем уходит?')
 
     # def __str__(self):
     #     return f'{self.user}'

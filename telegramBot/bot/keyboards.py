@@ -54,9 +54,9 @@ def get_keyboard_students(grade: Grade):
 @sync_to_async
 def get_main_keyboard(tg_bot_auth: TGBotAuth):
     user = tg_bot_auth.user
-    grades = Grade.objects.filter(class_teachers__in=[tg_bot_auth.user]).order_by('year_of_study', 'group')
+    grades = Grade.objects.filter(class_teachers__in=[tg_bot_auth.user], student__isnull=False).distinct().order_by('year_of_study', 'group')
     if user.is_staff or user.is_superuser:
-        grades = Grade.objects.all().order_by('year_of_study', 'group')
+        grades = Grade.objects.filter(student__isnull=False).distinct().order_by('year_of_study', 'group')
     builder = ReplyKeyboardBuilder()
 
     if len(grades) == 1:
