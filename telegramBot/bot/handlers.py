@@ -135,7 +135,10 @@ async def reason_handler(msg: Message, state: FSMContext):
     data = await state.get_data()
     tg_bot_auths, staff_message = await get_messages_to_staff(bot, permission)
     for tg_user in tg_bot_auths:
-        await bot.send_message(chat_id=tg_user, text=staff_message, parse_mode=ParseMode.MARKDOWN)
+        try:
+            await bot.send_message(chat_id=tg_user, text=staff_message, parse_mode=ParseMode.MARKDOWN)
+        except:
+            print('error')
     # print(data)
     await state.set_state(state_next)
     await state.set_data(data)
@@ -156,4 +159,3 @@ async def another_reason_handler(msg: Message, state: FSMContext):
     await state.set_state(state_next)
 
     await msg.answer(text=text, reply_markup=keyboard_markup)
-

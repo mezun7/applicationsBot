@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
-from applicationsBot.production import DATABASES_PROD, MEMORRY_FOR_TG_BOT_FSM
+from applicationsBot.production import DATABASES_PROD, MEMORRY_FOR_TG_BOT_FSM, BOT_TOKEN_PROD
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -122,4 +122,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-BOT_TOKEN = '6318782928:AAGjlAfkq26k02cpPINiZTaDEjMj13Be23o'
+BOT_TOKEN = BOT_TOKEN_PROD

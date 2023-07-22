@@ -4,6 +4,17 @@ from django.db import models
 
 from telegramBot.utils.random_str_generator import gen_string
 
+APPROVED_CHOICES = (
+    ('AP', 'APPROVED'),
+    ('NAP', 'NOT_APPROVED'),
+    ('NS', 'NOT_SEEN')
+)
+
+TYPE_OF_APPLICANT_CHOICES = (
+    ('P', 'PARENT'),
+    ('T', 'TEACHER')
+)
+
 
 # Create your models here.
 
@@ -25,6 +36,7 @@ class Student(models.Model):
     can_go_home_in_the_end_of_the_week = models.BooleanField(default=False, verbose_name='Может уходить домой '
                                                                                          'самостоятельно в к'
                                                                                          'онце недели?')
+    parent = models.ForeignKey(User, null=True, verbose_name=u'Родитель', on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'{self.surname} {self.name} {self.fathers_name} ({self.grade})'
@@ -37,6 +49,14 @@ class Permissions(models.Model):
     when_goes_out = models.DateTimeField(auto_now=True)
     reason = models.CharField(max_length=2000, blank=True)
     finished_filling = models.BooleanField(default=False)
+    application_by_parent = models.ForeignKey(User,
+                                              on_delete=models.SET_NULL,
+                                              verbose_name='Кто написал заявление?',
+                                              null=True,
+                                              blank=True,
+                                              related_name='parents_set')
+    approved = models.CharField(max_length=30, choices=APPROVED_CHOICES, default='NS')
+    type_of_applicant = models.CharField(max_length=30, choices=TYPE_OF_APPLICANT_CHOICES, default='T')
 
     def __str__(self):
         return f'{self.student} {self.when_goes_out}'
