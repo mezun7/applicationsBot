@@ -70,6 +70,7 @@ class TGBotAuth(models.Model):
     time_logged_in = models.DateTimeField(auto_now=True, blank=True, null=True)
     password = models.CharField(max_length=100, default=gen_string)
     authenticated = models.BooleanField(default=False)
+    type_of_user = models.CharField(max_length=30, choices=TYPE_OF_APPLICANT_CHOICES, default='T')
 
     # def __str__(self):
     #     return f'{self.user}'
