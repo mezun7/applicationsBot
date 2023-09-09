@@ -104,8 +104,8 @@ async def student_handler(msg: Message, state: FSMContext):
         grade = await Grade.objects.aget(pk=data['grade_pk'])
     except KeyError:
         grade = await Grade.objects.aget(student__name__iexact=name,
-                                         student_surname__iexact=surname,
-                                         student_fathers_name__iexact=fathers_name
+                                         student__surname__iexact=surname,
+                                         student__fathers_name__iexact=fathers_name
                                          )
     student = await Student.objects.aget(grade=grade,
                                          name__iexact=name,
