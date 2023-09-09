@@ -98,13 +98,20 @@ async def grade_handler(msg: Message, state: FSMContext):
 @router.message(MyStates.student_choosing)
 async def student_handler(msg: Message, state: FSMContext):
     data = await state.get_data()
-    grade = await Grade.objects.aget(pk=data['grade_pk'])
+    user = await TGBotAuth.objects.aget(tg_user_id=msg.from_user.id)
     surname, name, fathers_name = msg.text.split()
+    try:
+        grade = await Grade.objects.aget(pk=data['grade_pk'])
+    except KeyError:
+        grade = await Grade.objects.aget(student__name__iexact=name,
+                                         student_surname__iexact=surname,
+                                         student_fathers_name__iexact=fathers_name
+                                         )
     student = await Student.objects.aget(grade=grade,
                                          name__iexact=name,
                                          surname__iexact=surname,
                                          fathers_name__iexact=fathers_name)
-    user = await TGBotAuth.objects.aget(tg_user_id=msg.from_user.id)
+
     permission = Permissions()
     permission.student = student
     permission.who_gave_permission = await get_user_for_tg_bot_auth(user)
@@ -195,7 +202,6 @@ async def not_approve_parent_application(query: CallbackQuery, callback_data: Ma
 
 @router.message(MyStates.not_approved_application)
 async def not_approved_reason(msg: Message, state: FSMContext, bot: Bot):
-
     bot_auth = await TGBotAuth.objects.aget(tg_user_id=msg.from_user.id)
     data = await state.get_data()
     permission = await Permissions.objects.aget(pk=data["perm_pk"])
