@@ -16,6 +16,7 @@ from telegramBot.models import Grade, Student, Permissions, TGBotAuth, ReasonsAp
 class AdminGrade(admin.ModelAdmin):
     list_display = ('year_of_study', 'group')
     list_filter = ('year_of_study',)
+    filter_horizontal = ('class_teachers',)
 
 
 @admin.register(Student)
