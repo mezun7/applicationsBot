@@ -25,10 +25,8 @@ exit_kb = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="◀️ Выйти 
 iexit_kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="◀️ Выйти в меню", callback_data="menu")]])
 
 
-@sync_to_async
-def get_keyboard_students(grade: Grade):
+def get_students_for_keyboard(grade: Grade):
     now = datetime.now()
-
     students = Student.objects.filter(grade=grade). \
         exclude(permissions__when_goes_out__day=now.day,
                 permissions__when_goes_out__month=now.month,
@@ -44,10 +42,15 @@ def get_keyboard_students(grade: Grade):
 
 
 @sync_to_async
+def get_keyboard_students(grade: Grade):
+    return get_students_for_keyboard(grade)
+
+
+@sync_to_async
 def get_main_keyboard(tg_bot_auth: TGBotAuth):
     user = tg_bot_auth.user
+    builder = ReplyKeyboardBuilder()
     if tg_bot_auth.type_of_user == 'P':
-        builder = ReplyKeyboardBuilder()
         builder.button(text=f'Заявление на выход')
         builder.button(text=f'Запрос справки с места обучения')
         builder.adjust(1)
@@ -60,10 +63,9 @@ def get_main_keyboard(tg_bot_auth: TGBotAuth):
         'year_of_study', 'group')
     if user.is_staff or user.is_superuser:
         grades = Grade.objects.filter(student__isnull=False).distinct().order_by('year_of_study', 'group')
-    builder = ReplyKeyboardBuilder()
 
     if len(grades) == 1:
-        return get_keyboard_students(grades[0])
+        return get_students_for_keyboard(grades[0])
     for grade in grades:
         builder.button(text=f'{grade.year_of_study}-{grade.group}',
                        callback_data=MainCallback(action='grade', pk=f'{grade.pk}').pack())
@@ -84,7 +86,6 @@ def get_reasons_keyboard():
     builder.button(text=f'Другое')
     builder.adjust(1)
     return builder.as_markup(), MESSAGES['reason_choice'], MyStates.reason_choosing
-
 
 # @sync_to_async
 # def get_approval_keyboard(permission: Permissions):
