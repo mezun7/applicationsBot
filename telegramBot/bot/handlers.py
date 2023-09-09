@@ -14,27 +14,17 @@ from django.contrib.auth.models import User
 
 from applicationsBot import settings
 from applicationsBot.settings import TGBOT_MEMORY
+from telegramBot.bot import main
 from telegramBot.bot.cb_data import MainCallback
 from telegramBot.bot.keyboards import menu, get_main_keyboard, get_keyboard_students, get_reasons_keyboard
+
 from telegramBot.bot.states import MyStates
 from telegramBot.models import TGBotAuth, Student, Permissions, Grade
-from telegramBot.utils.dao import get_last_permission, get_user_for_tg_bot_auth, set_permission
-from telegramBot.utils.sender import get_messages_to_staff
+from telegramBot.utils.dao import get_last_permission, get_user_for_tg_bot_auth, set_permission, \
+    get_parent_for_permission
+from telegramBot.utils.sender import get_messages_to_staff, send_back_approved_message
 
 router = Router()
-dp = None
-bot = None
-
-
-async def main():
-    global dp, bot
-    logging.basicConfig(level=logging.INFO)
-    bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML)
-    dp = Dispatcher(storage=TGBOT_MEMORY)
-    dp.include_router(router)
-    await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
-    # await dp.storage.close()
 
 
 @router.message(Command("start"))
@@ -141,10 +131,10 @@ async def reason_handler(msg: Message, state: FSMContext):
     # permission = await get_last_permission(bot_auth, msg.text)
     keyboard_markup, text, state_next = await get_main_keyboard(bot_auth)
     data = await state.get_data()
-    tg_bot_auths, staff_message = await get_messages_to_staff(bot, permission)
+    tg_bot_auths, staff_message = await get_messages_to_staff(main.bot, permission)
     for tg_user in tg_bot_auths:
         try:
-            await bot.send_message(chat_id=tg_user, text=staff_message, parse_mode=ParseMode.MARKDOWN)
+            await main.bot.send_message(chat_id=tg_user, text=staff_message, parse_mode=ParseMode.MARKDOWN)
         except:
             print('error')
     # print(data)
@@ -155,7 +145,6 @@ async def reason_handler(msg: Message, state: FSMContext):
 
 @router.message(MyStates.reason_another)
 async def another_reason_handler(msg: Message, state: FSMContext):
-    global bot
     state_data = await state.get_data()
     permission = await Permissions.objects.aget(pk=state_data['permission_id'])
     await set_permission(permission, msg.text)
@@ -167,3 +156,55 @@ async def another_reason_handler(msg: Message, state: FSMContext):
     await state.set_state(state_next)
 
     await msg.answer(text=text, reply_markup=keyboard_markup)
+
+
+@router.callback_query(MainCallback.filter(F.action == 'approve_student'))
+async def approve_parent_application(query: CallbackQuery, callback_data: MainCallback, bot: Bot):
+    tg_auth = await TGBotAuth.objects.aget(tg_user_id=query.from_user.id)
+    user = await get_user_for_tg_bot_auth(tg_auth)
+    perm_pk = callback_data.pk
+    permission = await Permissions.objects.aget(pk=perm_pk)
+    permission.finished_filling = True
+    permission.who_gave_permission = user
+    permission.approved = 'AP'
+    parent_perm = await get_parent_for_permission(permission)
+    parent_tgbot_auth = await TGBotAuth.objects.aget(user=parent_perm)
+    parent_chat_id = parent_tgbot_auth.chat_id
+    await bot.send_message(chat_id=parent_chat_id, text='Ваше заявление согласовано', parse_mode=ParseMode.MARKDOWN)
+    tg_bot_auths, staff_message = await get_messages_to_staff(bot, permission)
+    for tg_user in tg_bot_auths:
+        await bot.send_message(chat_id=tg_user, text=staff_message, parse_mode=ParseMode.MARKDOWN)
+    await permission.asave()
+    await send_back_approved_message(bot, permission)
+    await query.message.delete_reply_markup()
+    await query.message.answer(text='Успешно выполнено.')
+
+
+@router.callback_query(MainCallback.filter(F.action == 'not_approve_student'))
+async def not_approve_parent_application(query: CallbackQuery, callback_data: MainCallback, bot: Bot,
+                                         state: FSMContext):
+    keyboard = aiogram.types.ReplyKeyboardRemove()
+    message_text = 'Укажите причину отказа'
+    state_next = MyStates.not_approved_application
+    perm_pk = callback_data.pk
+    await state.set_data({f'perm_pk': perm_pk})
+    await state.set_state(state_next)
+    await query.message.delete_reply_markup()
+    await query.message.answer(text=message_text, reply_markup=keyboard)
+
+
+@router.message(MyStates.not_approved_application)
+async def not_approved_reason(msg: Message, state: FSMContext, bot: Bot):
+
+    bot_auth = await TGBotAuth.objects.aget(tg_user_id=msg.from_user.id)
+    data = await state.get_data()
+    permission = await Permissions.objects.aget(pk=data["perm_pk"])
+    permission.finished_filling = True
+    permission.why_not_approved = msg.text
+    permission.approved = 'NAP'
+    await permission.asave()
+    await send_back_approved_message(bot, permission)
+    keyboard, message_text, state_next = await get_main_keyboard(bot_auth)
+
+    await state.set_state(state_next)
+    await msg.answer(text=message_text, reply_markup=keyboard)

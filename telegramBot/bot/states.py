@@ -7,4 +7,13 @@ class MyStates(StatesGroup):
     student_choosing = State()
     reason_choosing = State()
     reason_another = State()
+    not_approved_application = State()
     main = State()
+
+
+class ParentsState(StatesGroup):
+    main = State()
+    student_choosing = State()
+    date_choosing = State()
+    reason_choosing = State()
+    with_whom_choosing = State()

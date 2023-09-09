@@ -15,6 +15,11 @@ TYPE_OF_APPLICANT_CHOICES = (
     ('T', 'TEACHER')
 )
 
+REFERENCE_CHOICES = (
+    ('S', 'Справка с места учебы'),
+    ('U', 'Неизвестно')
+)
+
 
 # Create your models here.
 
@@ -43,7 +48,10 @@ class Student(models.Model):
 
 
 class Permissions(models.Model):
-    who_gave_permission = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Кто выдал разрешение?')
+    who_gave_permission = models.ForeignKey(User,
+                                            on_delete=models.CASCADE,
+                                            verbose_name='Кто выдал разрешение?',
+                                            null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, verbose_name='Кому разрешение выдано?')
     date_time_permission_given = models.DateTimeField(auto_now=True)
     when_goes_out = models.DateTimeField(auto_now=True)
@@ -57,6 +65,8 @@ class Permissions(models.Model):
                                               related_name='parents_set')
     approved = models.CharField(max_length=30, choices=APPROVED_CHOICES, default='NS')
     type_of_applicant = models.CharField(max_length=30, choices=TYPE_OF_APPLICANT_CHOICES, default='T')
+    with_whom_goes_out = models.CharField(max_length=500, null=True)
+    why_not_approved = models.CharField(max_length=500, null=True)
 
     def __str__(self):
         return f'{self.student} {self.when_goes_out}'
@@ -74,7 +84,7 @@ class TGBotAuth(models.Model):
     going_with_whom_comment = models.CharField(max_length=500, null=True, blank=True, verbose_name='С кем уходит?')
 
     # def __str__(self):
-    #     return f'{self.user}'
+    #     return f'{self.user} ({self.type_of_user})'
 
 
 class GoingWithWhomReasons(models.Model):
@@ -86,3 +96,11 @@ class GoingWithWhomReasons(models.Model):
 
 class ReasonsApplication(models.Model):
     reason = models.CharField(max_length=3000)
+
+
+class ReferenceApplication(models.Model):
+    parent = models.ForeignKey(User, models.SET_NULL, null=True)
+    student = models.ForeignKey(Student, models.SET_NULL, null=True)
+    datetime_asked = models.DateTimeField(auto_now=True)
+    done = models.BooleanField(default=False)
+    type_of_reference = models.CharField(max_length=200, choices=REFERENCE_CHOICES, default='U')

@@ -5,12 +5,11 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardBu
     ReplyKeyboardRemove
 from aiogram.utils.keyboard import InlineKeyboardBuilder, KeyboardBuilder, ReplyKeyboardBuilder
 from asgiref.sync import sync_to_async
-from django.contrib.auth.models import User
 
 from telegramBot.bot.cb_data import MainCallback
-from telegramBot.bot.states import MyStates
-from telegramBot.models import Grade, TGBotAuth, Student, ReasonsApplication
-from telegramBot.utils.dao import get_user_for_tg_bot_auth
+from telegramBot.bot.messages import MESSAGES
+from telegramBot.bot.states import MyStates, ParentsState
+from telegramBot.models import Grade, TGBotAuth, Student, ReasonsApplication, Permissions
 
 menu = [
     [InlineKeyboardButton(text="📝 Генерировать текст", callback_data="generate_text"),
@@ -24,13 +23,6 @@ menu = [
 menu = InlineKeyboardMarkup(inline_keyboard=menu)
 exit_kb = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="◀️ Выйти в меню")]], resize_keyboard=True)
 iexit_kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="◀️ Выйти в меню", callback_data="menu")]])
-
-MESSAGES = {
-    'student_choice': 'Выберите, пожалуйста, ученика',
-    'grade_choice': 'Выберите, пожалуйста, класс',
-    'reason_choice': 'Выберите причину отсутствия или выберите кнопку "Другое"  и впшите причину.',
-    'reason_another': 'Укажите причину отсутствия'
-}
 
 
 @sync_to_async
@@ -54,7 +46,18 @@ def get_keyboard_students(grade: Grade):
 @sync_to_async
 def get_main_keyboard(tg_bot_auth: TGBotAuth):
     user = tg_bot_auth.user
-    grades = Grade.objects.filter(class_teachers__in=[tg_bot_auth.user], student__isnull=False).distinct().order_by('year_of_study', 'group')
+    if tg_bot_auth.type_of_user == 'P':
+        builder = ReplyKeyboardBuilder()
+        builder.button(text=f'Заявление на выход')
+        builder.button(text=f'Запрос справки с места обучения')
+        builder.adjust(1)
+        markup = builder.as_markup()
+        print(markup)
+        return markup, MESSAGES['parents_main'], ParentsState.main
+        # return get_parents_main_keyboard()
+
+    grades = Grade.objects.filter(class_teachers__in=[tg_bot_auth.user], student__isnull=False).distinct().order_by(
+        'year_of_study', 'group')
     if user.is_staff or user.is_superuser:
         grades = Grade.objects.filter(student__isnull=False).distinct().order_by('year_of_study', 'group')
     builder = ReplyKeyboardBuilder()
@@ -81,3 +84,19 @@ def get_reasons_keyboard():
     builder.button(text=f'Другое')
     builder.adjust(1)
     return builder.as_markup(), MESSAGES['reason_choice'], MyStates.reason_choosing
+
+
+# @sync_to_async
+# def get_approval_keyboard(permission: Permissions):
+#     print(f'permv_id: {permission.pk}')
+#     text = f'Вам на согласование поступила заявка на выход ученика {permission.student}. Для того, чтобы ' \
+#            f'согласовать/не согласовать необходимо выбрать соответствующую кнопку.'
+#
+#     builder = InlineKeyboardBuilder()
+#     builder.button(text=f'Согласовать', callback_data=MainCallback(action='approve_student', pk=permission.pk))
+#     builder.button(text=f'Не согласовать', callback_data=MainCallback(action='not_approve_student', pk=permission.pk))
+#     builder.adjust(2)
+#
+#     state_next = MyStates.main
+#
+#     return builder.as_markup(), text, state_next

@@ -1,4 +1,5 @@
 import csv
+import logging
 
 from django.contrib import admin
 from django.contrib.auth.models import User
@@ -64,6 +65,26 @@ class AdminStudent(admin.ModelAdmin):
                     student.fathers_name = fathers_name
                     student.surname = surname
                     student.save()
+                try:
+                    login = row['login'].strip()
+                    password = row['password'].strip()
+                    parent_name = row['parent_name']
+                    parent_surname = row['parent_surname']
+                    user = User.objects.get(username=login)
+                except KeyError:
+                    print('User doesnt have login/password')
+                except User.DoesNotExist:
+                    user = User.objects.create_user(username=login, password=password)
+                    user.first_name = parent_name
+                    user.last_name = parent_surname
+                    user.save()
+                    student.parent = user
+                    student.save()
+                    tgbotauth = TGBotAuth()
+                    tgbotauth.user = user
+                    tgbotauth.password = password
+                    tgbotauth.type_of_user = 'P'
+                    tgbotauth.save()
 
             # Create Hero objects from passed in data
             # ...

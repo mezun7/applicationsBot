@@ -1,7 +1,7 @@
 from django.core.management import BaseCommand
 import asyncio
 
-from telegramBot.bot.handlers import main
+from telegramBot.bot.main import main
 
 
 class Command(BaseCommand):
