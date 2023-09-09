@@ -27,11 +27,7 @@ iexit_kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="◀
 
 def get_students_for_keyboard(grade: Grade):
     now = datetime.now()
-    students = Student.objects.filter(grade=grade). \
-        exclude(permissions__when_goes_out__day=now.day,
-                permissions__when_goes_out__month=now.month,
-                permissions__when_goes_out__year=now.year,
-                permissions__finished_filling=True).order_by('surname', 'name', 'fathers_name')
+    students = Student.objects.filter(grade=grade).order_by('surname', 'name', 'fathers_name')
     builder = ReplyKeyboardBuilder()
     for student in students:
         builder.button(
