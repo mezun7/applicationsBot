@@ -152,12 +152,13 @@ async def reason_handler(msg: Message, state: FSMContext):
 
 @router.message(MyStates.reason_another)
 async def another_reason_handler(msg: Message, state: FSMContext):
+    global bot
     state_data = await state.get_data()
     permission = await Permissions.objects.aget(pk=state_data['permission_id'])
     await set_permission(permission, msg.text)
     bot_auth = await TGBotAuth.objects.aget(tg_user_id=msg.from_user.id)
     keyboard_markup, text, state_next = await get_main_keyboard(bot_auth)
-    tg_bot_auths, staff_message = await get_messages_to_staff(bot, permission)
+    tg_bot_auths, staff_message = await get_messages_to_staff(main.bot, permission)
     for tg_user in tg_bot_auths:
         await bot.send_message(chat_id=tg_user, text=staff_message, parse_mode=ParseMode.MARKDOWN)
     await state.set_state(state_next)
