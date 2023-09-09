@@ -41,7 +41,7 @@ class Student(models.Model):
     can_go_home_in_the_end_of_the_week = models.BooleanField(default=False, verbose_name='Может уходить домой '
                                                                                          'самостоятельно в к'
                                                                                          'онце недели?')
-    parent = models.ForeignKey(User, null=True, verbose_name=u'Родитель', on_delete=models.SET_NULL)
+    parent = models.ForeignKey(User, null=True, blank=True, verbose_name=u'Родитель', on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'{self.surname} {self.name} {self.fathers_name} ({self.grade})'

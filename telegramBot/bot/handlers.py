@@ -16,7 +16,7 @@ from applicationsBot import settings
 from applicationsBot.settings import TGBOT_MEMORY
 from telegramBot.bot import main
 from telegramBot.bot.cb_data import MainCallback
-from telegramBot.bot.keyboards import menu, get_main_keyboard, get_keyboard_students, get_reasons_keyboard
+from telegramBot.bot.keyboards import get_main_keyboard, get_keyboard_students, get_reasons_keyboard
 
 from telegramBot.bot.states import MyStates
 from telegramBot.models import TGBotAuth, Student, Permissions, Grade
